@@ -44,8 +44,8 @@
                 <div class="flex items-center gap-3">
                     <img src="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg" class="w-10 h-10 object-contain drop-shadow-sm">
                     <div>
-                        <h1 class="text-lg font-bold text-gray-900 leading-tight hidden sm:block">MST SIS Dashboard</h1>
-                        <h1 class="text-lg font-bold text-gray-900 leading-tight sm:hidden">MST SIS</h1>
+                        <h1 class="text-lg font-bold text-gray-900 leading-tight hidden sm:block">SIS MST</h1>
+                        <h1 class="text-lg font-bold text-gray-900 leading-tight sm:hidden">SIS MST</h1>
                     </div>
                 </div>
 
@@ -219,9 +219,9 @@
             </div>
             
             <button onclick="handleLogout()" class="w-full bg-white text-red-600 font-bold py-4 rounded-2xl card-shadow border border-gray-100 flex justify-center items-center gap-2 hover:bg-red-50 transition-colors">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบอย่างปลอดภัย
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบ
             </button>
-            <p class="text-center text-xs text-gray-400 mt-8">MST SIS Dashboard Web Version 4.0<br>&copy; 2026 Muang Surat Thani School</p>
+            <p class="text-center text-xs text-gray-400 mt-8">Student Information System Version 4.0<br>&copy; 2026 Muangsuratthani School</p>
         </div>
     </main>
 
@@ -243,27 +243,41 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, getDoc, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        // 🌟 1. เพิ่มการ Import ระบบ Auth เข้ามา
+        import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const firebaseConfig = { apiKey: "AIzaSyCBNubZEzVbtdLXuQoadXNeDaEPMvCKGwU", authDomain: "mst-school.firebaseapp.com", projectId: "mst-school", storageBucket: "mst-school.firebasestorage.app", messagingSenderId: "674395320659", appId: "1:674395320659:web:74eca21ff2dfd9026af1a6" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        
+        // 🌟 2. ประกาศตัวแปร auth
+        const auth = getAuth(app);
 
-        // สลับหน้าจอ (รองรับทั้ง Desktop และ Mobile)
+        // In-App Browser 
+        window.openInApp = (url, title) => {
+            document.getElementById('webview-title').innerText = title;
+            document.getElementById('webview-url').innerHTML = `<i class="fa-solid fa-lock text-green-500 mr-1"></i> ${new URL(url).hostname}`;
+            document.getElementById('webview-loader').style.display = 'flex';
+            document.getElementById('webview-frame').src = url;
+            const modal = document.getElementById('webview-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('translate-x-full'), 10);
+        };
+        window.closeWebview = () => {
+            const modal = document.getElementById('webview-modal');
+            modal.classList.add('translate-x-full');
+            setTimeout(() => { modal.classList.add('hidden'); document.getElementById('webview-frame').src = ''; }, 300);
+        };
+
+        // สลับหน้าจอ
         window.switchNav = (id, el) => {
             document.querySelectorAll('.view-section').forEach(v => v.classList.add('hidden'));
             
-            // ล้างสีสถานะปุ่ม Desktop
-            document.querySelectorAll('.nav-item-desktop').forEach(b => { 
-                b.classList.remove('active-nav-bg'); 
-            });
-            // ล้างสีสถานะปุ่ม Mobile
-            document.querySelectorAll('.nav-item-mobile').forEach(b => { 
-                b.classList.remove('active-nav'); 
-            });
+            document.querySelectorAll('.nav-item-desktop').forEach(b => { b.classList.remove('active-nav-bg'); });
+            document.querySelectorAll('.nav-item-mobile').forEach(b => { b.classList.remove('active-nav'); });
 
             document.getElementById('view-' + id).classList.remove('hidden');
             
-            // เปิดสีสถานะให้ปุ่มที่กด (ถ้ามี)
             if(el) {
                 if(el.classList.contains('nav-item-desktop')) el.classList.add('active-nav-bg');
                 if(el.classList.contains('nav-item-mobile')) el.classList.add('active-nav');
@@ -271,7 +285,22 @@
             window.scrollTo(0,0);
         };
 
-        window.handleLogout = () => { localStorage.clear(); window.location.href = 'login.html'; };
+        // 🌟 3. อัปเกรดปุ่มออกจากระบบ ให้เตะออกจาก Google Auth ด้วย
+        window.handleLogout = () => { 
+            Swal.fire({
+                title: 'กำลังออกจากระบบ...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading() }
+            });
+            signOut(auth).then(() => {
+                localStorage.clear(); 
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                console.error(error);
+                localStorage.clear(); 
+                window.location.href = 'login.html';
+            });
+        };
 
         // จัดการหน้าต่างแจ้งเตือน
         window.toggleNotifications = () => {
@@ -281,8 +310,8 @@
                 modal.classList.remove('hidden'); 
                 setTimeout(() => { 
                     modal.classList.remove('opacity-0'); 
-                    if(window.innerWidth < 640) sheet.classList.remove('translate-y-full'); // Mobile slide up
-                    else sheet.classList.remove('scale-95'); // Desktop pop
+                    if(window.innerWidth < 640) sheet.classList.remove('translate-y-full');
+                    else sheet.classList.remove('scale-95');
                 }, 10);
                 document.getElementById('notif-badge').classList.add('hidden');
             } else {
@@ -292,6 +321,9 @@
                 setTimeout(() => { modal.classList.add('hidden'); }, 300);
             }
         };
+
+        // ... (โค้ดด้านล่างส่วน document.addEventListener เอาไว้เหมือนเดิมได้เลยครับ ไม่ต้องแก้) ...            
+    
 
         document.addEventListener('DOMContentLoaded', async () => {
             const sid = localStorage.getItem('studentId'), spic = localStorage.getItem('studentPic');
