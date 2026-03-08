@@ -135,7 +135,7 @@
                     <h3 class="font-bold text-gray-800 mb-4 text-sm tracking-wide">แอปพลิเคชัน & บริการ</h3>
                     <div class="grid grid-cols-4 gap-3">
                         
-                        <div onclick="window.open('https://mstsc-e-voting.pages.dev/', '_blank')" class="col-span-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-[1.5rem] p-4 text-white cursor-pointer hover:scale-[1.02] shadow-md transition-transform relative overflow-hidden">
+                        <div onclick="openInApp('https://mstsc-e-voting.pages.dev/', 'e-Voting')" class="col-span-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-[1.5rem] p-4 text-white cursor-pointer hover:scale-[1.02] shadow-md transition-transform relative overflow-hidden">
                             <i class="fa-solid fa-check-to-slot absolute -right-2 -bottom-2 text-6xl opacity-20"></i>
                             <div class="relative z-10">
                                 <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center mb-2 backdrop-blur-sm"><i class="fa-solid fa-bolt text-sm"></i></div>
@@ -144,7 +144,7 @@
                             </div>
                         </div>
 
-                        <div onclick="window.open('https://reg-mstsc.pages.dev/', '_blank')" class="col-span-2 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-[1.5rem] p-4 text-white cursor-pointer hover:scale-[1.02] shadow-md transition-transform relative overflow-hidden">
+                        <div onclick="openInApp('https://reg-mstsc.pages.dev/', 'REG MSTSC')" class="col-span-2 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-[1.5rem] p-4 text-white cursor-pointer hover:scale-[1.02] shadow-md transition-transform relative overflow-hidden">
                             <i class="fa-solid fa-users-gear absolute -right-2 -bottom-2 text-6xl opacity-20"></i>
                             <div class="relative z-10">
                                 <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center mb-2 backdrop-blur-sm"><i class="fa-solid fa-star text-sm"></i></div>
@@ -153,22 +153,22 @@
                             </div>
                         </div>
 
-                        <div onclick="window.open('https://reg-nurse.pages.dev/', '_blank')" class="bg-white rounded-[1.2rem] p-3 shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-rose-50 transition-colors group">
+                        <div onclick="openInApp('https://reg-nurse.pages.dev/', 'NURSE')" class="bg-white rounded-[1.2rem] p-3 shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-rose-50 transition-colors group">
                             <div class="text-rose-500 text-2xl group-hover:scale-110 transition-transform"><i class="fa-solid fa-briefcase-medical"></i></div>
                             <span class="text-[10px] font-bold text-gray-600 text-center leading-tight">ห้อง<br>พยาบาล</span>
                         </div>
 
-                        <div onclick="window.open('https://sgs.bopp-obec.info/sgss/Security/SignIn.aspx', '_blank')" class="bg-white rounded-[1.2rem] p-3 shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-yellow-50 transition-colors group">
+                        <div onclick="openInApp('https://sgs.bopp-obec.info/sgss/Security/SignIn.aspx', 'SGS')" class="bg-white rounded-[1.2rem] p-3 shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-yellow-50 transition-colors group">
                             <div class="text-yellow-500 text-2xl group-hover:scale-110 transition-transform"><i class="fa-solid fa-graduation-cap"></i></div>
                             <span class="text-[10px] font-bold text-gray-600 text-center leading-tight">ผลการ<br>เรียน</span>
                         </div>
 
-                        <div onclick="window.open('http://mst.vlcloud.net/', '_blank')" class="bg-white rounded-[1.2rem] p-3 shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-green-50 transition-colors group">
+                        <div onclick="openInApp('http://mst.vlcloud.net/', 'E-Library')" class="bg-white rounded-[1.2rem] p-3 shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-green-50 transition-colors group">
                             <div class="text-green-500 text-2xl group-hover:scale-110 transition-transform"><i class="fa-solid fa-book-bookmark"></i></div>
                             <span class="text-[10px] font-bold text-gray-600 text-center leading-tight">ห้องสมุด<br>E-Library</span>
                         </div>
 
-                        <div onclick="window.open('https://toschool.in/mst/', '_blank')" class="bg-white rounded-[1.2rem] p-3 shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-teal-50 transition-colors group">
+                        <div onclick="openInApp('https://toschool.in/mst/', 'TOSCHOOL')" class="bg-white rounded-[1.2rem] p-3 shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-teal-50 transition-colors group">
                             <div class="text-teal-500 text-2xl group-hover:scale-110 transition-transform"><i class="fa-solid fa-clipboard-check"></i></div>
                             <span class="text-[10px] font-bold text-gray-600 text-center leading-tight">ความ<br>ประพฤติ</span>
                         </div>
@@ -306,6 +306,28 @@
             }
         });
 
+        // 🌐 ฟังก์ชันเปิดเว็บในแอป (In-App Browser)
+        window.openInApp = (url, title) => {
+            document.getElementById('webview-title').innerText = title;
+            document.getElementById('webview-url').innerHTML = `<i class="fa-solid fa-lock text-green-500 mr-1"></i> ${new URL(url).hostname}`;
+            document.getElementById('webview-loader').style.display = 'flex';
+            document.getElementById('webview-frame').src = url;
+            
+            const modal = document.getElementById('webview-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('translate-x-full'), 10);
+        };
+
+        // ฟังก์ชันปิดเว็บ
+        window.closeWebview = () => {
+            const modal = document.getElementById('webview-modal');
+            modal.classList.add('translate-x-full');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.getElementById('webview-frame').src = '';
+            }, 300);
+        };
+
         // ระบบสลับหน้า
         window.switchNav = (id, el) => {
             document.querySelectorAll('.view-section').forEach(v => v.classList.add('hidden'));
@@ -410,5 +432,23 @@
             } catch (error) { document.getElementById('header-name').innerText = "ข้อผิดพลาดการเชื่อมต่อ"; }
         });
     </script>
+    <div id="webview-modal" class="fixed inset-0 z-[200] bg-white hidden flex-col transition-transform duration-300 translate-x-full">
+        <div class="glass px-4 pt-12 pb-4 shadow-sm flex items-center justify-between z-10 shrink-0 border-b border-gray-200">
+            <button onclick="closeWebview()" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200 transition-colors">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div class="flex-1 text-center px-4 overflow-hidden">
+                <h2 id="webview-title" class="font-bold text-gray-800 truncate text-sm">กำลังโหลด...</h2>
+                <p id="webview-url" class="text-[9px] text-gray-400 truncate"><i class="fa-solid fa-lock text-green-500 mr-1"></i>Secure Connection</p>
+            </div>
+            <div class="w-10"></div> </div>
+        <div class="flex-1 relative bg-gray-50">
+            <div id="webview-loader" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 z-0">
+                <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-2 text-violet-300"></i>
+                <p class="text-xs">กำลังเชื่อมต่อระบบ...</p>
+            </div>
+            <iframe id="webview-frame" src="" class="absolute inset-0 w-full h-full border-0 z-10 bg-white" onload="document.getElementById('webview-loader').style.display='none'"></iframe>
+        </div>
+    </div>
 </body>
 </html>

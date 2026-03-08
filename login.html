@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>เข้าสู่ระบบ - MST APP</title>
     
     <link rel="manifest" href="manifest.json">
@@ -47,7 +47,6 @@
         <div class="glass-panel rounded-[2.5rem] p-8 text-center relative overflow-hidden">
             <div class="absolute -top-20 -right-20 w-40 h-40 bg-violet-400 rounded-full mix-blend-multiply blur-[3rem] opacity-40"></div>
             <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-blue-400 rounded-full mix-blend-multiply blur-[3rem] opacity-40"></div>
-            
             <div class="relative z-10">
                 <img src="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg" class="w-24 h-24 mx-auto rounded-3xl shadow-[0_10px_20px_rgba(0,0,0,0.1)] mb-6 border-[3px] border-white">
                 <h1 class="text-2xl font-black text-gray-800 tracking-tight mb-1">MST APP</h1>
@@ -56,7 +55,7 @@
                 <button id="btn-login" class="w-full bg-white hover:bg-gray-50 hover:scale-[1.02] border border-gray-100 text-gray-700 font-bold py-4 rounded-2xl flex items-center justify-center gap-3 shadow-[0_10px_20px_rgba(0,0,0,0.05)] transition-all">
                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5"> เข้าสู่ระบบด้วยอีเมลโรงเรียน
                 </button>
-                <p class="text-[10px] text-gray-400 mt-5">เฉพาะอีเมล @mst.ac.th เท่านั้น</p>
+                <p class="text-[10px] text-gray-400 mt-5">ระบบจะล็อกบัญชี @mst.ac.th อัตโนมัติ</p>
             </div>
         </div>
     </div>
@@ -65,7 +64,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-        // ตั้งค่า Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCBNubZEzVbtdLXuQoadXNeDaEPMvCKGwU",
             authDomain: "mst-school.firebaseapp.com",
@@ -77,14 +75,16 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+        
+        // 🌟 ไฮไลท์: บังคับหน้าต่าง Google ให้ใช้เฉพาะโดเมนโรงเรียน
+        provider.setCustomParameters({ hd: "mst.ac.th" });
 
-        // 🌟 ระบบ PWA (บังคับติดตั้งตั้งแต่หน้า Login)
+        // ระบบ PWA
         if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(e => console.log(e)); }
         let deferredPrompt;
         const installPromptUi = document.getElementById('install-prompt');
         const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone) || window.matchMedia('(display-mode: standalone)').matches;
         
-        // ถ้านักเรียนยังไม่ได้ติดตั้งแอป ให้เด้งหน้าต่างขึ้นมาเตือนทันที
         if (!isInStandaloneMode()) {
             setTimeout(() => {
                 installPromptUi.classList.remove('hidden'); installPromptUi.classList.add('flex');
@@ -92,25 +92,35 @@
                     document.getElementById('btn-install-app').classList.add('hidden');
                     document.getElementById('ios-instruction').classList.remove('hidden');
                 }
-            }, 800); // เด้งเตือนเร็วขึ้น (0.8 วินาที)
+            }, 800);
         }
 
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
+        
+        // 🌟 แก้ไข: ถ้ากดยอมรับติดตั้ง ให้เปิดหน้าต่างติดตั้งขึ้นมา ถ้าล้มเหลวให้ซ่อนไป
         document.getElementById('btn-install-app').addEventListener('click', async () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') installPromptUi.classList.add('hidden');
+                if (outcome === 'accepted') {
+                    installPromptUi.classList.add('hidden');
+                }
                 deferredPrompt = null;
+            } else {
+                // สำหรับมือถือบางเครื่องที่ไม่รองรับ prompt อัตโนมัติ
+                Swal.fire({
+                    icon: 'info',
+                    title: 'คำแนะนำการติดตั้ง',
+                    text: 'กรุณากดที่เมนูเบราว์เซอร์ (จุด 3 จุด) แล้วเลือก "เพิ่มลงในหน้าจอหลัก (Add to Home Screen)" ครับ',
+                    confirmButtonColor: '#7e22ce'
+                });
             }
         });
 
-        // 🌟 ระบบล็อกอิน
-        // เช็คว่าเคยล็อกอินค้างไว้ไหม ถ้าเคย ให้เด้งไปหน้า index.html ทันที
         onAuthStateChanged(auth, user => {
             if (user && user.email.endsWith("@mst.ac.th")) {
                 const emailPrefix = user.email.split('@')[0];
-                const studentId = emailPrefix.slice(-5); // ตัด 5 ตัวท้ายเหมือนกัน
+                const studentId = emailPrefix.slice(-5);
                 localStorage.setItem('studentId', studentId);
                 localStorage.setItem('studentPic', user.photoURL);
                 window.location.href = 'index.html';
@@ -120,31 +130,17 @@
         document.getElementById('btn-login').onclick = () => {
             signInWithPopup(auth, provider).then((result) => {
                 const user = result.user;
-                // ตรวจสอบว่าเป็นอีเมลโรงเรียนหรือไม่
                 if (user.email.endsWith("@mst.ac.th")) {
-                    
-                    // 1. ดึงข้อความหน้า @ ออกมา (เช่น "6829903")
                     const emailPrefix = user.email.split('@')[0];
-                    
-                    // 2. 🌟 ตัดเอาเฉพาะ 5 ตัวท้าย (รหัสนักเรียนจริงๆ)
                     const studentId = emailPrefix.slice(-5); 
-                    
                     localStorage.setItem('studentId', studentId);
                     localStorage.setItem('studentPic', user.photoURL);
                     window.location.href = 'index.html';
-                    
                 } else {
                     auth.signOut();
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'เข้าสู่ระบบล้มเหลว',
-                        text: 'กรุณาใช้อีเมลของโรงเรียน (@mst.ac.th) เท่านั้นครับ',
-                        confirmButtonColor: '#7e22ce'
-                    });
+                    Swal.fire({ icon: 'error', title: 'ไม่อนุญาต', text: 'ต้องใช้อีเมล @mst.ac.th เท่านั้น', confirmButtonColor: '#7e22ce' });
                 }
-            }).catch((error) => {
-                console.error(error);
-            });
+            }).catch((error) => console.error(error));
         };
     </script>
 </body>
